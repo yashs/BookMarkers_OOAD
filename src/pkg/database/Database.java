@@ -14,7 +14,7 @@ public class Database {
 			{
 				String connectionURL = "jdbc:mysql://localhost:3306/bookmarkers";
 				Class.forName("com.mysql.jdbc.Driver").newInstance();
-				connection = DriverManager.getConnection(connectionURL, "root", "root");
+				connection = DriverManager.getConnection(connectionURL, "root", "");
 				
 			}
 			catch (SQLException e)

@@ -199,7 +199,7 @@ public class MemberRegistration {
 		if(!getEmailID().equals("")){
 			SendEmail.send(getEmailID(), Encrypt.encrypt(getLoginName()));	
 		}
-		else if(getPhoneNumber()!=0){
+		if(getPhoneNumber()!=0){
 			try {
 				SendSMS.sendSms(getPhoneNumber(), Encrypt.encrypt(getLoginName()));
 			} catch (TwilioRestException e) {

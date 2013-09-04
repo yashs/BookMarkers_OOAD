@@ -3,21 +3,14 @@
  */
 package pkg.misc;
 
-import java.util.Scanner;
-
 import pkg.database.Encrypt;
 import pkg.database.PersistanceActions;
-import pkg.gui.clients.LibraryAdminGUI;
-import pkg.gui.clients.LibraryMemberGUI;
-import pkg.gui.clients.LoggedInUserPageGUI;
-import pkg.gui.clients.UserNotActivatedGUI;
-import pkg.gui.clients.UserNotAuthenticatedGUI;
 
 /**
  * @author redokani
  *
  */
-public class LoginUser {
+public class LoginUser{
 	String loginName;
 	String password;
 	Boolean ifAccountValidated;
@@ -27,18 +20,38 @@ public class LoginUser {
 		this.password = password;
 	}
 
-	public void allowLogin(){
+	public boolean validateConfirmationCode(String code){
+		try {
+			if(code.equals(Encrypt.encrypt(loginName))){
+				PersistanceActions.changeUserStatus(loginName);
+				return true;
+			}else{
+				return false;
+			}
+//			userSignedIn = new LibraryMemberGUI(loginName);	
+//			userSignedIn.showWelcomeMessage(loginName);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		return false;
+	}
+	
+	public String allowLogin(){
 
 		String status = null;
-		LoggedInUserPageGUI userSignedIn = null;
+		//LoggedInUserPageGUI userSignedIn = null;
 		try {
 			status = PersistanceActions.userAuthenticate(loginName, password);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 
-		if(status.startsWith("Account Not Activated")){
+		/*if(status.startsWith("Account Not Activated")){
 			UserNotActivatedGUI accNotActivated = new UserNotActivatedGUI();
 			Scanner takeCode = new Scanner(System.in);
 			accNotActivated.showErrorMessage(status,loginName);
@@ -57,8 +70,6 @@ public class LoginUser {
 			finally{
 				takeCode.close();
 			}
-			
-
 		}
 		else if(status.equalsIgnoreCase("Authentication Failed")){
 			UserNotAuthenticatedGUI accNotAuth = new UserNotAuthenticatedGUI();
@@ -74,9 +85,9 @@ public class LoginUser {
 			}
 
 			userSignedIn.showWelcomeMessage(status.substring(13));
-		}
+		}*/
 
-
+		return status;
 
 	}
 

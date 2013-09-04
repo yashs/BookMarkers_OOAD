@@ -20,8 +20,5 @@ class LoginDemo
 		}
 		catch(Exception e)
 		{JOptionPane.showMessageDialog(null, e.getMessage());}
-
 	}
-
-
 }

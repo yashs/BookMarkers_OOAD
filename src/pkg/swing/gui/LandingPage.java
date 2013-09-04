@@ -1,9 +1,13 @@
 package pkg.swing.gui;
 import javax.swing.*;
 
+import pkg.abstractFactory.LibraryItems;
+import pkg.abstractFactory.User;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -28,8 +32,9 @@ class LandingPage extends JFrame implements ActionListener{
 	
 	
 	public void start(){
-		setDefaultCloseOperation(javax.swing.
-				WindowConstants.DISPOSE_ON_CLOSE);
+		
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
 		banner = new JPanel();
 		banner.add(new JLabel("WELCOME TO BOOKMARKERS LIBRARY"));
 		
@@ -64,13 +69,16 @@ class LandingPage extends JFrame implements ActionListener{
 		//SUBMIT.addActionListener(this);
 		setTitle("WELCOME TO BOOKMARKERS");
 		setVisible(true);
+		pack();
 	}
 	
 	 @Override
 	  public void actionPerformed(ActionEvent evt) {
 	    if (evt.getActionCommand() == Actions.SEARCH.name()) {
 	      // DO DB SEARCH OPERATION
-	    	
+	    	User guestUser = new User();
+	    	List<LibraryItems> returnList= new ArrayList<LibraryItems>(); 
+			returnList = guestUser.searchItems(searchText.getText());
 	      
 	      
 	    }else if (evt.getActionCommand() == Actions.SIGNIN.name()) {
@@ -91,11 +99,13 @@ class LandingPage extends JFrame implements ActionListener{
 	    	
 	    	ArrayList<JPanel> signupScreenPanels = new ArrayList<JPanel>();
 	    	
-	    	Signup signupScreen = new Signup();
+	    	RegistrationPageGUI signupScreen = new RegistrationPageGUI();
 	    	signupScreenPanels = signupScreen.getRegistrationPanels();
 	    	
 	    	LoginDemo.frame.add(signupScreenPanels.get(0), BorderLayout.NORTH);
-	    	LoginDemo.frame.add(signupScreenPanels.get(1), BorderLayout.SOUTH);
+	    	LoginDemo.frame.add(signupScreenPanels.get(1), BorderLayout.CENTER);
+	    	LoginDemo.frame.add(signupScreenPanels.get(2), BorderLayout.SOUTH);
+	    	setSize(new Dimension(1000, 1000));
 	    	setVisible(true);
 		    }
 	  }

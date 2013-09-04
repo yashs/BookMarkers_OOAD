@@ -12,10 +12,11 @@ import pkg.database.PersistanceActions;
  * @author redokani
  *
  */
-public abstract class User {
-	public void searchItems(String keyword){
+public class User {
+	public List<LibraryItems> searchItems(String keyword){
 		List<LibraryItems> searchItems = PersistanceActions.getSearchedItems(keyword);
-		displaySearchedItems(searchItems);
+		return searchItems;
+		//displaySearchedItems(searchItems);
 	}
 
 	//display this in GUI

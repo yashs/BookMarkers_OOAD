@@ -21,6 +21,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import pkg.abstractFactory.LibraryItems;
 import pkg.abstractFactory.LibraryMember;	
+import pkg.database.PersistanceActions;
+import pkg.database.Transaction;
 import pkg.swing.gui.SearchResultGUI.Actions;
 
 /**
@@ -31,8 +33,7 @@ public class LibraryMemberGUI extends LoggedInUserPageGUI{
 
 	public enum Actions {
 		SEARCH,
-		checkout,
-		reserve,
+		returnItems,
 		pay,
 		query,
 		signout
@@ -44,11 +45,11 @@ public class LibraryMemberGUI extends LoggedInUserPageGUI{
 	}
 
 	static LibraryMemberGUI libMember = null;
-	JPanel welcomePanel, searchPanel, searchResultPanel, buttonPanel, statusPanel;
+	JPanel welcomePanel, searchPanel, searchResultPanel, buttonPanel, statusPanel, fineInfo;
 	JLabel welcomeLabel, searchResult;
 	JTextField searchField;
 	JTextArea textArea;
-	JButton SEARCH, checkout, reserve, pay, query, signout;
+	JButton SEARCH, pay, query, signout, returnItem;
 
 	public static LibraryMemberGUI getLibraryMember(String loginMember){
 		if(libMember == null)
@@ -64,6 +65,9 @@ public class LibraryMemberGUI extends LoggedInUserPageGUI{
 		welcomePanel.add(signout);
 		welcomePanel.setBorder(new EtchedBorder());
 
+		fineInfo = new JPanel(new FlowLayout());
+		fineInfo.add(new JLabel("Your total amount due is:\t" + PersistanceActions.calculateFines(getLoginMember())));
+		
 		searchPanel = new JPanel(new FlowLayout());
 		searchField = new JTextField(50);
 		searchField.setText("Enter search options: Search By Keyword/Location/Title/Author/Keyword in a title\n");
@@ -74,12 +78,14 @@ public class LibraryMemberGUI extends LoggedInUserPageGUI{
 		searchPanel.setBorder(new TitledBorder(new EtchedBorder(), "SEARCH"));
 
 		buttonPanel = new JPanel(new FlowLayout());
-		checkout = new JButton("CHECKOUT");
-		reserve = new JButton("RESERVE");
+		//checkout = new JButton("CHECKOUT");
+		//reserve = new JButton("RESERVE");
+		returnItem = new JButton("Return Items");
 		pay = new JButton("PAY");
 		query = new JButton("QUERY TRANSACTION");
-		buttonPanel.add(checkout);
-		buttonPanel.add(reserve);
+		//buttonPanel.add(checkout);
+		//buttonPanel.add(reserve);
+		buttonPanel.add(returnItem);
 		buttonPanel.add(pay);
 		buttonPanel.add(query);
 		buttonPanel.setBorder(new TitledBorder(new EtchedBorder(), "CHOOSE YOUR ACTIONS:"));
@@ -91,17 +97,20 @@ public class LibraryMemberGUI extends LoggedInUserPageGUI{
 		statusPanel.setBorder(new TitledBorder(new EtchedBorder(), "ACTIONS:"));
 
 		SEARCH.setActionCommand(Actions.SEARCH.name());
-		checkout.setActionCommand(Actions.checkout.name());
-		reserve.setActionCommand(Actions.reserve.name());
+		//checkout.setActionCommand(Actions.checkout.name());
+		//reserve.setActionCommand(Actions.reserve.name());
+		returnItem.setActionCommand(Actions.returnItems.name());
 		pay.setActionCommand(Actions.pay.name());
 		query.setActionCommand(Actions.query.name());
 		signout.setActionCommand(Actions.signout.name());
 
 		SEARCH.addActionListener(this);
 		signout.addActionListener(this);
-		checkout.addActionListener(this);
-		reserve.addActionListener(this);
-
+		returnItem.addActionListener(this);
+		pay.addActionListener(this);
+		query.addActionListener(this);
+		//checkout.addActionListener(this);
+		//reserve.addActionListener(this);
 
 	}	
 
@@ -129,7 +138,7 @@ public class LibraryMemberGUI extends LoggedInUserPageGUI{
 			SearchResultGUI res = new SearchResultGUI(getLoginMember());
 			res.start(returnList);
 			
-			ArrayList<JPanel> searchResPanels = res.getSearchRes();
+			ArrayList<JPanel> searchResPanels = res.getSearchResPanels();
 			LoginDemo.frame.getContentPane().removeAll();
 			
 			JPanel panel = new JPanel();
@@ -147,14 +156,81 @@ public class LibraryMemberGUI extends LoggedInUserPageGUI{
 			LoginDemo.frame.validate();
 			setVisible(true);
 			
-		}else if (e.getActionCommand() == Actions.checkout.name()) {
+		}else if (e.getActionCommand() == Actions.returnItems.name()) {
+			List<Transaction> returnList= new ArrayList<Transaction>(); 
+			LibraryMember member = new LibraryMember(getLoginMember());
+			returnList = member.displayBorrowedItems();
+			
+			ReturnItemGui res = new ReturnItemGui(getLoginMember());
+			res.start(returnList);
+			
+			ArrayList<JPanel> returnItemResPanels = res.getReturnItemResPanels();
+			LoginDemo.frame.getContentPane().removeAll();
+			
+			JPanel panel = new JPanel();
+			panel.setLayout(new GridLayout(0,1));
+			panel.add(returnItemResPanels.get(0));
+			panel.add(returnItemResPanels.get(1));
+			panel.add(returnItemResPanels.get(2));
+			panel.add(returnItemResPanels.get(3));
+			
+			
+			LoginDemo.frame.getContentPane().add(panel, BorderLayout.SOUTH);
 
-		}else if (e.getActionCommand() == Actions.reserve.name()) {
-
+			LoginDemo.frame.setSize(800, 600);
+			LoginDemo.frame.invalidate();
+			LoginDemo.frame.validate();
+			setVisible(true);
+			
 		}else if (e.getActionCommand() == Actions.pay.name()) {
+			List<Transaction> returnList= new ArrayList<Transaction>(); 
+			LibraryMember member = new LibraryMember(getLoginMember());
+			returnList = member.displayBorrowedItems();
+			
+			PayFinesGUI res = new PayFinesGUI(getLoginMember());
+			res.start(returnList);
+			
+			ArrayList<JPanel> returnPayFinesGUIPanels = res.getPayFinesResPanels();
+			LoginDemo.frame.getContentPane().removeAll();
+			
+			JPanel panel = new JPanel();
+			panel.setLayout(new GridLayout(0,1));
+			panel.add(returnPayFinesGUIPanels.get(0));
+			panel.add(returnPayFinesGUIPanels.get(1));
+			panel.add(returnPayFinesGUIPanels.get(2));
+			panel.add(returnPayFinesGUIPanels.get(3));
+			
+			
+			LoginDemo.frame.getContentPane().add(panel, BorderLayout.SOUTH);
 
+			LoginDemo.frame.setSize(800, 600);
+			LoginDemo.frame.invalidate();
+			LoginDemo.frame.validate();
+			setVisible(true);
+			
 		}else if (e.getActionCommand() == Actions.query.name()) {
+			//List<Transaction> returnList= new ArrayList<Transaction>(); 
+			//LibraryMember member = new LibraryMember(getLoginMember());
+			//returnList = member.displayBorrowedItems();
+			
+			QueryGUIInputs res = new QueryGUIInputs(getLoginMember());
+			res.start();
+			
+			ArrayList<JPanel> returnQueryGUIInputPanels = res.getQueryGUIInputsResPanels();
+			LoginDemo.frame.getContentPane().removeAll();
+			
+			JPanel panel = new JPanel();
+			panel.setLayout(new GridLayout(0,1));
+			panel.add(returnQueryGUIInputPanels.get(0));
+			panel.add(returnQueryGUIInputPanels.get(1));
+			panel.add(returnQueryGUIInputPanels.get(2));
+			
+			LoginDemo.frame.getContentPane().add(panel, BorderLayout.SOUTH);
 
+			LoginDemo.frame.setSize(800, 450);
+			LoginDemo.frame.invalidate();
+			LoginDemo.frame.validate();
+			setVisible(true);
 		}else if (e.getActionCommand() == Actions.signout.name()) {
 			LoginDemo.frame.getContentPane().removeAll();
 	    	setVisible(false);
@@ -169,6 +245,7 @@ public class LibraryMemberGUI extends LoggedInUserPageGUI{
 	public ArrayList<JPanel> getLibraryMemberpanels() {
 		ArrayList<JPanel> libMemPanels = new ArrayList<JPanel>();
 		libMemPanels.add(welcomePanel);
+		libMemPanels.add(fineInfo);
 		libMemPanels.add(searchPanel);
 		//libMemPanels.add(searchResultPanel);
 		libMemPanels.add(buttonPanel);

@@ -184,7 +184,7 @@ public class RegistrationPageGUI extends JPanel implements ActionListener {
 					LoginDemo.frame.getContentPane().removeAll();
 					setVisible(false);
 					CCPaymentGui ccinfo = CCPaymentGui.CCPaymentGui();
-					ccinfo.start();
+					ccinfo.start(0, null);
 
 			    	ArrayList<JPanel> ccPaymentPanels = ccinfo.getCCScreen();
 

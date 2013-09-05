@@ -4,21 +4,26 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 
 import pkg.abstractFactory.LibraryItems;
 
+import pkg.misc.SendEmail;
 import pkg.subscription.MemberRegistration;
+import sun.security.action.GetLongAction;
 
 public class PersistanceActions {
+	static PreparedStatement ps = null;
+	static ResultSet rs = null;
 
 	public static String userAuthenticate(String loginName, String password)
 			throws Exception {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		
 		String retString = "";
 		try {
 			String query = "SELECT * FROM userCredentials Where LoginName='"
@@ -74,7 +79,7 @@ public class PersistanceActions {
 	}
 
 	public static void setMemberDetailsInDB(MemberRegistration memberReg) {
-		PreparedStatement ps = null;
+		//PreparedStatement ps = null;
 		try {
 			// member id, loginname, password, fullname, email,phone number,
 			// address, startdate,membervalidated
@@ -124,8 +129,8 @@ public class PersistanceActions {
 
 		hashCode = hashCode.replace(" ", "+");
 		String[] urlParams = hashCode.split(";");
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 		try {
 			ps = Database.Get_Connection().prepareStatement(
 					"SELECT * FROM users where name = '"
@@ -191,8 +196,8 @@ public class PersistanceActions {
 		}
 
 		List<LibraryItems> searchedItems = new ArrayList<LibraryItems>();
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 		try {
 			ps = Database.Get_Connection().prepareStatement(query);
 			rs = ps.executeQuery();
@@ -226,8 +231,8 @@ public class PersistanceActions {
 	}
 
 	public static boolean checkIfAdmin(String loginName) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 		try {
 			String query = "Select * from usercredentials WHERE LoginName = '"
 					+ loginName + "'";
@@ -274,8 +279,8 @@ public class PersistanceActions {
 
 	public static boolean checkDuplicateLoginName(String loginName) {
 
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 
 		try {
 			ps = Database.Get_Connection().prepareStatement(
@@ -308,7 +313,7 @@ public class PersistanceActions {
 
 	public static void changeUserStatus(String loginName) {
 
-		PreparedStatement ps = null;
+		//PreparedStatement ps = null;
 		try {
 			String query = "UPDATE usercredentials SET user_status = '1' where LoginName = '"
 					+ loginName + "'";
@@ -332,12 +337,12 @@ public class PersistanceActions {
 
 
 	public static void reserveItem(String loginName, String bookId) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 		try {
 			ps = Database.Get_Connection().prepareStatement(
 					"select * from reservation where item_no='" + bookId + "'");
-			rs = ps.executeQuery();
+			rs = ps.executeQuery("select * from reservation where item_no='" + bookId + "'");
 			if (rs.next()) {
 
 				String userList = rs.getString("email_list");
@@ -353,13 +358,20 @@ public class PersistanceActions {
 				ps.setString(1, userList);
 				ps.executeUpdate();
 			} else {
+				String userList ="" ;
+				ps = Database.Get_Connection().prepareStatement(
+						"select EmailID from members where LoginName='" + loginName + "'");
+				rs = ps.executeQuery();
+				if(rs.next()){
+					userList = rs.getString("EmailID");
+				}
+				
 				ps = Database.Get_Connection().prepareStatement(
 						"Insert into reservation values (?, ?)");
 				ps.setString(1, bookId);
-				ps.setString(2, loginName);
+				ps.setString(2, userList);
 				ps.executeUpdate();
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -376,8 +388,8 @@ public class PersistanceActions {
 	}
 
 	public static String checkOutItems(String loginName, String itemId) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 		String status = null;
 		try {
 			//validate if user can checkout or not
@@ -521,9 +533,91 @@ public class PersistanceActions {
 		return elapsed;
 	}
 
+	public static List<Transaction> displayBorrowedItems(String loginName){
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
+		List<Transaction> itemsBorrowed = new ArrayList<Transaction>();
+		Transaction userItemsDetails = null;
+		String query = "select * from transaction where login_name='" + loginName +"' AND  ISNULL(return_date)";
+		System.out.println(query);
+		try {
+			ps = Database.Get_Connection().prepareStatement(query);
+			rs = ps.executeQuery();
+			while(rs.next()){
+				userItemsDetails = new Transaction();
+				userItemsDetails.setLoginName(loginName);
+				userItemsDetails.setItemId(rs.getString("item_no"));
+				userItemsDetails.setItemTitle(rs.getString("item_title"));
+				userItemsDetails.setCheckoutDate(rs.getTimestamp("checkout_date"));
+				userItemsDetails.setDueDate(rs.getTimestamp("due_date"));
+				userItemsDetails.setFineAmountDue(rs.getInt("fine_amt_due"));
+				userItemsDetails.setFineAmountPaid(rs.getInt("fine_amt_paid"));
+
+				itemsBorrowed.add(userItemsDetails);
+			}
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return itemsBorrowed;
+	}
+	
+	static List<Transaction> itemsBorrowed = new ArrayList<Transaction>();
+	
+	public static List<Transaction> displayQueryTransactionResults(String loginName, String month, String year){
+		itemsBorrowed = new ArrayList<Transaction>();
+		String query = "select * from transaction where login_name='" + loginName +"'";
+		
+		System.out.println(query);
+		try {
+			ps = Database.Get_Connection().prepareStatement(query);
+			rs = ps.executeQuery();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+			while(rs.next()){
+
+				Date checkOutDate = rs.getTimestamp("checkout_date");
+				String dateStr = sdf.format(checkOutDate);
+				String[] dataStrIn = dateStr.split("-");
+				
+				if(month.equals("") && year.equals("")){
+					populateQueryTransaction(loginName, itemsBorrowed);
+				}else if(year.equals(dataStrIn[0]) && month.equals("")){
+					populateQueryTransaction(loginName, itemsBorrowed);
+				}else if(dataStrIn[0].equals(year) && dataStrIn[1].equals(month)){
+					populateQueryTransaction(loginName, itemsBorrowed);
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return itemsBorrowed;
+
+	}
+	
+	private static void populateQueryTransaction(String loginName, List<Transaction> itemsBorrowed){
+		
+		try{
+		Transaction userItemsDetails = new Transaction();
+		userItemsDetails.setLoginName(loginName);
+		userItemsDetails.setItemId(rs.getString("item_no"));
+		userItemsDetails.setItemTitle(rs.getString("item_title"));
+		userItemsDetails.setCheckoutDate(rs.getTimestamp("checkout_date"));
+		userItemsDetails.setDueDate(rs.getTimestamp("due_date"));
+		userItemsDetails.setFineAmountDue(rs.getInt("fine_amt_due"));
+		userItemsDetails.setFineAmountPaid(rs.getInt("fine_amt_paid"));
+		itemsBorrowed.add(userItemsDetails);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
 	public static void returnItems(String loginName, String itemId) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 		try {
 			ps = Database.Get_Connection().prepareStatement(
 					"select * from transaction where login_name = '"
@@ -589,6 +683,18 @@ public class PersistanceActions {
 								+ itemId+"'");
 				ps.executeUpdate();
 			}
+			
+			String query = "select * from reservation where item_no ='" + itemId +"'";
+			rs = ps.executeQuery(query);
+			while(rs.next()){
+				String[] emails = rs.getString("email_list").split(":");
+				for(int i=0 ; i<emails.length ; i++){
+					SendEmail.send(emails[i], "Mail From BookMarkers:\t" + itemId);
+				}
+			}
+			
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -606,8 +712,8 @@ public class PersistanceActions {
 
 
 	public static List<Transaction> getAllCheckOutItems(String loginName) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 		List<Transaction> getAllCheckedOutDetails = new ArrayList<Transaction>();
 		Transaction userItemsDetails = null;
 		try {
@@ -630,7 +736,7 @@ public class PersistanceActions {
 				userItemsDetails = new Transaction();
 				userItemsDetails.setLoginName(loginName);
 				userItemsDetails.setMemberCard(Integer.toString(cardNumber));
-				userItemsDetails.setItemId(rs.getInt("item_no"));
+				userItemsDetails.setItemId(rs.getString("item_no"));
 				userItemsDetails.setItemTitle(rs.getString("item_title"));
 				userItemsDetails.setCheckoutDate(rs.getTimestamp("checkout_date"));
 				userItemsDetails.setDueDate(rs.getTimestamp("due_date"));
@@ -657,15 +763,16 @@ public class PersistanceActions {
 
 	}
 
-	public static void calculateFines(String loginName) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+	public static int calculateFines(String loginName) {
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
+		int totalFine = 0;
 		try {
 			ps = Database.Get_Connection().prepareStatement(
 					"select * from transaction where login_name = '"
 							+ loginName + "'");
 			rs = ps.executeQuery();
-			int totalFine = 0;
+			
 			Calendar dueDateCal,retDateCal = null,clone;
 			while (rs.next()) {
 				Timestamp dueDate = rs.getTimestamp("due_date");
@@ -716,7 +823,7 @@ public class PersistanceActions {
 						ps_chk.close();
 						totalFine += fine;
 						ps = Database.Get_Connection().prepareStatement(
-								"UPDATE transaction SET fine_amt_due = '"+fine+"' where login_name = '"
+								"UPDATE transaction SET fine_amt_due = "+fine+" where login_name = '"
 										+ loginName+"' AND item_no = '" + rs.getString("item_no") + "'");
 						ps.executeUpdate();
 					}
@@ -744,13 +851,13 @@ public class PersistanceActions {
 				e.printStackTrace();
 			}
 		}
-
+		return totalFine;
 
 	}
 
 	public static String payFine(String loginName) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		//PreparedStatement ps = null;
+		//ResultSet rs = null;
 		String payFine = "";
 		try {
 			ps = Database.Get_Connection().prepareStatement(
@@ -771,7 +878,7 @@ public class PersistanceActions {
 
 			while(rs.next()){
 				PreparedStatement ps_update = Database.Get_Connection().prepareStatement(
-						"UPDATE transaction SET fine_amt_paid = '"+rs.getString("fine_amt_due")+"' AND fine_amt_due = 0 where login_name = '"
+						"UPDATE transaction SET fine_amt_paid = '"+rs.getInt("fine_amt_due")+"', fine_amt_due = 0 where login_name = '"
 								+ loginName+"' AND item_no = '"+rs.getString("item_no")+"'");
 				ps_update.executeUpdate();
 
@@ -783,7 +890,7 @@ public class PersistanceActions {
 							"UPDATE transaction SET return_date = '"+retDate+"' where login_name = '"
 									+ loginName+"' AND item_no = '"+rs.getString("item_no")+"'");
 					ps_update.executeUpdate();
-					
+
 					//udpate status of items table too
 					//change items table status to Borrowed
 					ps_update = Database.Get_Connection().prepareStatement(
@@ -810,11 +917,11 @@ public class PersistanceActions {
 		}
 		return payFine;
 	}
-	
-	
-	
+
+
+
 	//Persistance Actions for Member
-	
-	
+
+
 	//Persistence Actions for Admin
 }

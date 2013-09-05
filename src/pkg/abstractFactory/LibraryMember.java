@@ -22,7 +22,6 @@ public class LibraryMember extends Patrons {
 	 * @see pkg.abstractFactory.Patrons#searchItems()
 	 */
 	public void reserveItems(String itemId){
-		itemId = "F1";
 		PersistanceActions.reserveItem(getLoginName(),itemId);
 	}
 	
@@ -30,7 +29,6 @@ public class LibraryMember extends Patrons {
 	//checkoutitems
 	
 	public String checkOutItems(String itemId){
-		itemId = "F1";
 		return PersistanceActions.checkOutItems(getLoginName(),itemId);
 	}	
 	
@@ -44,6 +42,10 @@ public class LibraryMember extends Patrons {
 	
 	public void returnItems(String itemId){
 		PersistanceActions.returnItems(getLoginName(),itemId);
+	}
+	
+	public List<Transaction> displayBorrowedItems(){
+		return PersistanceActions.displayBorrowedItems(getLoginName());
 	}
 	
 	public String payFine(){
@@ -60,13 +62,8 @@ public class LibraryMember extends Patrons {
 	
 	//query transaction
 	
-	public void queryTransactionHistory(){
-		
-	}
-
-	
-	
-
-	
+	public List<Transaction> queryTransactionHistory(String month, String year){
+		return PersistanceActions.displayQueryTransactionResults(getLoginName(), month, year);
+	}	
 }
 

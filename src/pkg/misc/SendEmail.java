@@ -24,10 +24,19 @@ public class SendEmail
  
     public static synchronized void send(String to, String confirmCode) {
         
+    	
+    	
     	TO = to;
     	String TEXT = null;
     	TEXT = "This is a Validation message from BookMarkers Library. Confirmation Code is as Below:\n\n";
     	TEXT = TEXT + confirmCode;
+    	
+    	if(confirmCode.contains("Mail From BookMarkers")){
+    		SUBJECT = confirmCode;
+    		TEXT = "This is a mail from BookMarkers. As per your request, this is a courtesy email informing that the book with BookId:\t" + confirmCode.replace("Bookmarkers Library Registration Confirmation Code", "")+" has become available in the library\n Thank You.";
+    	}
+    	
+    	
     	//Use Properties object to set environment properties
         Properties props = new Properties();
         

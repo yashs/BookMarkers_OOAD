@@ -80,6 +80,26 @@ class LandingPage extends JFrame implements ActionListener{
 	    	List<LibraryItems> returnList= new ArrayList<LibraryItems>(); 
 			returnList = guestUser.searchItems(searchText.getText());
 	      
+			SearchResultGUI res = new SearchResultGUI();
+			res.start(returnList);
+			ArrayList<JPanel> searchResPanels = res.getSearchResPanels();
+			LoginDemo.frame.getContentPane().removeAll();
+			
+			JPanel panel = new JPanel();
+			panel.setLayout(new GridLayout(0,1));
+			panel.add(searchResPanels.get(0));
+			panel.add(searchResPanels.get(1));
+			//panel.add(searchResPanels.get(2));
+			panel.add(searchResPanels.get(3));
+			
+			
+			LoginDemo.frame.getContentPane().add(panel, BorderLayout.SOUTH);
+
+			LoginDemo.frame.setSize(800, 450);
+			LoginDemo.frame.invalidate();
+			LoginDemo.frame.validate();
+			setVisible(true);
+			
 	      
 	    }else if (evt.getActionCommand() == Actions.SIGNIN.name()) {
 	    	LoginDemo.frame.getContentPane().removeAll();

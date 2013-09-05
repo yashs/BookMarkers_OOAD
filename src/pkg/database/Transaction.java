@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 public class Transaction {
 	private String loginName;
 	private String memberCard;
-	private int itemId;
+	private String itemId;
 	private String itemTitle;
 	private Timestamp checkoutDate;
 	private Timestamp dueDate;
@@ -42,7 +42,7 @@ public class Transaction {
 	/**
 	 * @return the itemId
 	 */
-	public int getItemId() {
+	public String getItemId() {
 		return itemId;
 	}
 	/**
@@ -78,7 +78,7 @@ public class Transaction {
 	/**
 	 * @param itemId the itemId to set
 	 */
-	public void setItemId(int itemId) {
+	public void setItemId(String itemId) {
 		this.itemId = itemId;
 	}
 	/**

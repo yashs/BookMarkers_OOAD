@@ -4,6 +4,7 @@ import javax.swing.*;
 import pkg.database.Database;
 import pkg.database.PersistanceActions;
 import pkg.misc.LoginUser;
+import pkg.swing.gui.SearchResultGUI.Actions;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 
 class Login extends JPanel implements ActionListener
 {
-	JButton SUBMIT, SIGNOUT;
+	JButton SUBMIT, SIGNOUT, back;
 	JPanel panel;
 	JPanel banner;
 	JLabel label1,label2;
@@ -30,7 +31,10 @@ class Login extends JPanel implements ActionListener
 		LoginDemo.frame.getContentPane().removeAll();
 		setVisible(false);
 		
-		banner = new JPanel();
+		banner = new JPanel(new FlowLayout());
+		back=new JButton("Go Back");
+		back.setActionCommand("Go Back");
+		banner.add(back);
 		banner.add(new JLabel("WELCOME TO BOOKMARKERS LIBRARY"));
 		label1 = new JLabel();
 		label1.setText("Username:");
@@ -52,6 +56,7 @@ class Login extends JPanel implements ActionListener
 		LoginDemo.frame.add(banner,BorderLayout.NORTH);
 		LoginDemo.frame.add(panel,BorderLayout.CENTER);
 		SUBMIT.addActionListener(this);
+		back.addActionListener(this);
 		setVisible(false);
 	}
 	
@@ -85,6 +90,14 @@ class Login extends JPanel implements ActionListener
 	    	LoginDemo.start();   	
 	    	setVisible(true);
 
+		}else if(ae.getActionCommand().equals("Go Back")){
+			LoginDemo.frame.getContentPane().removeAll();
+	    	setVisible(false);
+	    	LoginDemo.start();  
+	    	LoginDemo.frame.invalidate();
+	    	LoginDemo.frame.validate();
+	    	setVisible(true);
+
 		}else{
 			loginName=text1.getText();
 			password=text2.getText();
@@ -114,11 +127,12 @@ class Login extends JPanel implements ActionListener
 				panel.add(libMemPanels.get(1));
 				panel.add(libMemPanels.get(2));
 				panel.add(libMemPanels.get(3));
+				panel.add(libMemPanels.get(4));
 				
 				
 				LoginDemo.frame.getContentPane().add(panel, BorderLayout.SOUTH);
 
-				LoginDemo.frame.setSize(800, 600);
+				LoginDemo.frame.setSize(800, 750);
 				LoginDemo.frame.invalidate();
 				LoginDemo.frame.validate();
 				setVisible(true);
